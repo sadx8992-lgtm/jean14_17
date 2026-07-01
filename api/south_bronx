@@ -1,4 +1,4 @@
--- South Bronx Script with Fly + ESP + Key System
+-- South Bronx Script with Ragdoll Fly + ESP + Key System
 -- Made by: sadx8992
 
 local GITHUB_RAW = "https://raw.githubusercontent.com/sadx8992-lgtm/jean14_17/main"
@@ -12,10 +12,11 @@ local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
 
 local FlyActive = false
-local FlySpeed = 50 -- Lento
+local FlySpeed = 50
 local ESPActive = false
 local ESPParts = {}
 local ScriptActive = false
+local RagdollParts = {}
 
 -- =====================
 -- KEY VALIDATION SYSTEM
@@ -54,8 +55,46 @@ local function ValidateKey(key)
 end
 
 -- =====================
--- FLY SYSTEM
+-- RAGDOLL FLY SYSTEM (Cuerpo Caído)
 -- =====================
+
+local function CreateRagdoll()
+    local character = LocalPlayer.Character
+    if not character then return end
+    
+    -- Desactivar colisiones y físicas
+    for _, part in ipairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end
+    
+    -- Crear BodyVelocity para movimiento
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if rootPart then
+        local bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+        bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        bodyVelocity.Parent = rootPart
+        RagdollParts.bodyVelocity = bodyVelocity
+        
+        local bodyGyro = Instance.new("BodyGyro")
+        bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+        bodyGyro.Parent = rootPart
+        RagdollParts.bodyGyro = bodyGyro
+    end
+    
+    -- Hacer ragdoll (cuerpo caído)
+    local humanoid = character:FindFirstChild("Humanoid")
+    if humanoid then
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing, false)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Landed, false)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Running, false)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics, false)
+        humanoid.PlatformStand = true
+    end
+end
 
 local function StartFly()
     if not ScriptActive then
@@ -63,32 +102,33 @@ local function StartFly()
         return
     end
     
-    local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-    if not humanoid then return end
-    
-    local rootPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not rootPart then return end
+    local character = LocalPlayer.Character
+    if not character then return end
     
     FlyActive = true
-    
-    local bodyVelocity = Instance.new("BodyVelocity")
-    bodyVelocity.Velocity = Vector3.new(0, 0, 0)
-    bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-    bodyVelocity.Parent = rootPart
-    
-    local bodyGyro = Instance.new("BodyGyro")
-    bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-    bodyGyro.Parent = rootPart
-    
-    humanoid.PlatformStand = true
+    CreateRagdoll()
     
     local connection
     connection = game:GetService("RunService").RenderStepped:Connect(function()
         if not FlyActive or not LocalPlayer.Character then
             connection:Disconnect()
-            bodyVelocity:Destroy()
-            bodyGyro:Destroy()
-            humanoid.PlatformStand = false
+            -- Limpiar ragdoll
+            if RagdollParts.bodyVelocity then
+                RagdollParts.bodyVelocity:Destroy()
+            end
+            if RagdollParts.bodyGyro then
+                RagdollParts.bodyGyro:Destroy()
+            end
+            local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.PlatformStand = false
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing, true)
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.Landed, true)
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.Running, true)
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics, true)
+            end
+            RagdollParts = {}
             return
         end
         
@@ -117,11 +157,15 @@ local function StartFly()
             moveDirection = moveDirection.Unit
         end
         
-        bodyVelocity.Velocity = moveDirection * FlySpeed
-        bodyGyro.CFrame = Camera.CFrame
+        if RagdollParts.bodyVelocity then
+            RagdollParts.bodyVelocity.Velocity = moveDirection * FlySpeed
+        end
+        if RagdollParts.bodyGyro then
+            RagdollParts.bodyGyro.CFrame = Camera.CFrame
+        end
     end)
     
-    print("[✈️] Fly Activado - W/A/S/D para mover, Space/Ctrl para subir/bajar")
+    print("[✈️] Ragdoll Fly Activado - W/A/S/D para mover, Space/Ctrl para subir/bajar")
 end
 
 local function StopFly()
@@ -249,11 +293,11 @@ end)
 -- =====================
 
 print("\n========================================")
-print("  South Bronx Script - Fly + ESP")
+print("  South Bronx Script - Ragdoll Fly + ESP")
 print("========================================")
 print("[*] Ingresa tu KEY para acceder")
 print("[*] ValidateKey('TU_KEY_AQUI')")
-print("[*] Presiona F para Fly (On/Off)")
+print("[*] Presiona F para Ragdoll Fly (On/Off)")
 print("[*] Presiona E para ESP (On/Off)")
 print("========================================\n")
 
