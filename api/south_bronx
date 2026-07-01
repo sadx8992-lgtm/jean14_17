@@ -1,4 +1,4 @@
--- South Bronx Script with Ragdoll Fly + ESP + Key System
+-- South Bronx Script with GUI - Ragdoll Fly + ESP + Key System
 -- Made by: sadx8992
 
 local GITHUB_RAW = "https://raw.githubusercontent.com/sadx8992-lgtm/jean14_17/main"
@@ -14,9 +14,167 @@ local HttpService = game:GetService("HttpService")
 local FlyActive = false
 local FlySpeed = 50
 local ESPActive = false
-local ESPFolder = nil
 local ScriptActive = false
 local RagdollParts = {}
+local ESPPlayers = {}
+local GuiActive = true
+
+-- =====================
+-- CREAR GUI
+-- =====================
+
+local function CreateGui()
+    -- Crear ScreenGui principal
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "SouthBronxGui"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    
+    -- Panel principal
+    local mainPanel = Instance.new("Frame")
+    mainPanel.Name = "MainPanel"
+    mainPanel.Size = UDim2.new(0, 350, 0, 400)
+    mainPanel.Position = UDim2.new(0.5, -175, 0.5, -200)
+    mainPanel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    mainPanel.BorderColor3 = Color3.fromRGB(0, 255, 0)
+    mainPanel.BorderSizePixel = 3
+    mainPanel.Parent = screenGui
+    
+    -- Título
+    local title = Instance.new("TextLabel")
+    title.Name = "Title"
+    title.Size = UDim2.new(1, 0, 0, 40)
+    title.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    title.TextColor3 = Color3.fromRGB(0, 0, 0)
+    title.TextSize = 24
+    title.Font = Enum.Font.GothamBold
+    title.Text = "SOUTH BRONX"
+    title.Parent = mainPanel
+    
+    -- Status Label
+    local statusLabel = Instance.new("TextLabel")
+    statusLabel.Name = "StatusLabel"
+    statusLabel.Size = UDim2.new(1, -20, 0, 30)
+    statusLabel.Position = UDim2.new(0, 10, 0, 50)
+    statusLabel.BackgroundTransparency = 1
+    statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+    statusLabel.TextSize = 16
+    statusLabel.Font = Enum.Font.Gotham
+    statusLabel.Text = "Status: [NO VALIDADO]"
+    statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+    statusLabel.Parent = mainPanel
+    
+    -- Input Key
+    local keyLabel = Instance.new("TextLabel")
+    keyLabel.Name = "KeyLabel"
+    keyLabel.Size = UDim2.new(1, -20, 0, 20)
+    keyLabel.Position = UDim2.new(0, 10, 0, 90)
+    keyLabel.BackgroundTransparency = 1
+    keyLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+    keyLabel.TextSize = 14
+    keyLabel.Font = Enum.Font.Gotham
+    keyLabel.Text = "Ingresa tu KEY:"
+    keyLabel.TextXAlignment = Enum.TextXAlignment.Left
+    keyLabel.Parent = mainPanel
+    
+    local keyInput = Instance.new("TextBox")
+    keyInput.Name = "KeyInput"
+    keyInput.Size = UDim2.new(1, -20, 0, 30)
+    keyInput.Position = UDim2.new(0, 10, 0, 115)
+    keyInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    keyInput.BorderColor3 = Color3.fromRGB(0, 255, 0)
+    keyInput.BorderSizePixel = 2
+    keyInput.TextColor3 = Color3.fromRGB(0, 255, 0)
+    keyInput.TextSize = 12
+    keyInput.Font = Enum.Font.Gotham
+    keyInput.PlaceholderText = "KEY-SB2024-XXXXXX"
+    keyInput.Parent = mainPanel
+    
+    -- Botón Validar
+    local validateBtn = Instance.new("TextButton")
+    validateBtn.Name = "ValidateBtn"
+    validateBtn.Size = UDim2.new(1, -20, 0, 35)
+    validateBtn.Position = UDim2.new(0, 10, 0, 155)
+    validateBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+    validateBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+    validateBtn.TextSize = 16
+    validateBtn.Font = Enum.Font.GothamBold
+    validateBtn.Text = "VALIDAR KEY"
+    validateBtn.Parent = mainPanel
+    
+    -- Separador
+    local separator = Instance.new("Frame")
+    separator.Name = "Separator"
+    separator.Size = UDim2.new(1, -20, 0, 2)
+    separator.Position = UDim2.new(0, 10, 0, 200)
+    separator.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    separator.BorderSizePixel = 0
+    separator.Parent = mainPanel
+    
+    -- Botón Fly
+    local flyBtn = Instance.new("TextButton")
+    flyBtn.Name = "FlyBtn"
+    flyBtn.Size = UDim2.new(0.5, -7, 0, 40)
+    flyBtn.Position = UDim2.new(0, 10, 0, 215)
+    flyBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    flyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    flyBtn.TextSize = 14
+    flyBtn.Font = Enum.Font.GothamBold
+    flyBtn.Text = "FLY [OFF]"
+    flyBtn.Parent = mainPanel
+    
+    -- Botón ESP
+    local espBtn = Instance.new("TextButton")
+    espBtn.Name = "EspBtn"
+    espBtn.Size = UDim2.new(0.5, -7, 0, 40)
+    espBtn.Position = UDim2.new(0.5, 4, 0, 215)
+    espBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    espBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    espBtn.TextSize = 14
+    espBtn.Font = Enum.Font.GothamBold
+    espBtn.Text = "ESP [OFF]"
+    espBtn.Parent = mainPanel
+    
+    -- Info Text
+    local infoText = Instance.new("TextLabel")
+    infoText.Name = "InfoText"
+    infoText.Size = UDim2.new(1, -20, 0, 90)
+    infoText.Position = UDim2.new(0, 10, 0, 270)
+    infoText.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    infoText.BorderColor3 = Color3.fromRGB(0, 255, 0)
+    infoText.BorderSizePixel = 1
+    infoText.TextColor3 = Color3.fromRGB(0, 255, 0)
+    infoText.TextSize = 12
+    infoText.Font = Enum.Font.Gotham
+    infoText.TextWrapped = true
+    infoText.TextXAlignment = Enum.TextXAlignment.Left
+    infoText.TextYAlignment = Enum.TextYAlignment.Top
+    infoText.Text = "📋 CONTROLES:\n• F: Toggle Fly (Ragdoll)\n• E: Toggle ESP\n• F9: Ver Consola"
+    infoText.Parent = mainPanel
+    
+    -- Botón Cerrar
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Name = "CloseBtn"
+    closeBtn.Size = UDim2.new(1, -20, 0, 25)
+    closeBtn.Position = UDim2.new(0, 10, 0, 370)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+    closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeBtn.TextSize = 14
+    closeBtn.Font = Enum.Font.GothamBold
+    closeBtn.Text = "CERRAR"
+    closeBtn.Parent = mainPanel
+    
+    return {
+        gui = screenGui,
+        panel = mainPanel,
+        statusLabel = statusLabel,
+        keyInput = keyInput,
+        validateBtn = validateBtn,
+        flyBtn = flyBtn,
+        espBtn = espBtn,
+        closeBtn = closeBtn
+    }
+end
 
 -- =====================
 -- KEY VALIDATION SYSTEM
@@ -55,21 +213,19 @@ local function ValidateKey(key)
 end
 
 -- =====================
--- RAGDOLL FLY SYSTEM (Cuerpo Caído)
+-- RAGDOLL FLY SYSTEM
 -- =====================
 
 local function CreateRagdoll()
     local character = LocalPlayer.Character
     if not character then return end
     
-    -- Desactivar colisiones y físicas
     for _, part in ipairs(character:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CanCollide = false
         end
     end
     
-    -- Crear BodyVelocity para movimiento
     local rootPart = character:FindFirstChild("HumanoidRootPart")
     if rootPart then
         local bodyVelocity = Instance.new("BodyVelocity")
@@ -84,7 +240,6 @@ local function CreateRagdoll()
         RagdollParts.bodyGyro = bodyGyro
     end
     
-    -- Hacer ragdoll (cuerpo caído)
     local humanoid = character:FindFirstChild("Humanoid")
     if humanoid then
         humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing, false)
@@ -112,7 +267,6 @@ local function StartFly()
     connection = game:GetService("RunService").RenderStepped:Connect(function()
         if not FlyActive or not LocalPlayer.Character then
             connection:Disconnect()
-            -- Limpiar ragdoll
             if RagdollParts.bodyVelocity then
                 RagdollParts.bodyVelocity:Destroy()
             end
@@ -165,7 +319,7 @@ local function StartFly()
         end
     end)
     
-    print("[✈️] Ragdoll Fly Activado - W/A/S/D para mover, Space/Ctrl para subir/bajar")
+    print("[✈️] Ragdoll Fly Activado")
 end
 
 local function StopFly()
@@ -174,7 +328,7 @@ local function StopFly()
 end
 
 -- =====================
--- ESP SYSTEM (Mejorado)
+-- ESP SYSTEM
 -- =====================
 
 local function CreateESPGui(player)
@@ -185,20 +339,11 @@ local function CreateESPGui(player)
     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
     if not humanoidRootPart then return end
     
-    -- Crear carpeta para ESP si no existe
-    if not ESPFolder then
-        ESPFolder = Instance.new("Folder")
-        ESPFolder.Name = "ESPFolder"
-        ESPFolder.Parent = workspace
-    end
-    
-    -- Crear BillboardGui
     local billboardGui = Instance.new("BillboardGui")
     billboardGui.Size = UDim2.new(4, 0, 2, 0)
     billboardGui.MaxDistance = 500
     billboardGui.Parent = humanoidRootPart
     
-    -- Crear TextLabel
     local textLabel = Instance.new("TextLabel")
     textLabel.Size = UDim2.new(1, 0, 1, 0)
     textLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -209,7 +354,6 @@ local function CreateESPGui(player)
     textLabel.Text = player.Name
     textLabel.Parent = billboardGui
     
-    -- Crear Box (LineHandleAdornment para dibujar caja)
     local box = Instance.new("BoxHandleAdornment")
     box.Size = humanoidRootPart.Size + Vector3.new(0.5, 2, 0.5)
     box.Color3 = Color3.fromRGB(0, 255, 0)
@@ -218,8 +362,6 @@ local function CreateESPGui(player)
     
     return {gui = billboardGui, label = textLabel, box = box}
 end
-
-local ESPPlayers = {}
 
 local function StartESP()
     if not ScriptActive then
@@ -230,14 +372,12 @@ local function StartESP()
     ESPActive = true
     print("[👁️] ESP Activado")
     
-    -- Crear ESP para jugadores existentes
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and not ESPPlayers[player] then
             ESPPlayers[player] = CreateESPGui(player)
         end
     end
     
-    -- Crear ESP para nuevos jugadores
     local playerAddedConnection
     playerAddedConnection = Players.PlayerAdded:Connect(function(player)
         if ESPActive and player ~= LocalPlayer then
@@ -246,7 +386,6 @@ local function StartESP()
         end
     end)
     
-    -- Actualizar ESP constantemente
     local espUpdateConnection
     espUpdateConnection = game:GetService("RunService").RenderStepped:Connect(function()
         if not ESPActive then
@@ -262,12 +401,10 @@ local function StartESP()
                 local humanoid = character:FindFirstChild("Humanoid")
                 
                 if humanoidRootPart and humanoid then
-                    -- Actualizar distancia
                     local distance = (LocalPlayer.Character.HumanoidRootPart.Position - humanoidRootPart.Position).Magnitude
                     local health = math.floor(humanoid.Health)
                     espData.label.Text = player.Name .. " [" .. math.floor(distance) .. "m] " .. health .. "HP"
                     
-                    -- Cambiar color según salud
                     if health > 50 then
                         espData.label.TextColor3 = Color3.fromRGB(0, 255, 0)
                         espData.box.Color3 = Color3.fromRGB(0, 255, 0)
@@ -279,7 +416,6 @@ local function StartESP()
                         espData.box.Color3 = Color3.fromRGB(255, 0, 0)
                     end
                 else
-                    -- Eliminar si el jugador está muerto
                     pcall(function()
                         espData.gui:Destroy()
                         espData.box:Destroy()
@@ -287,7 +423,6 @@ local function StartESP()
                     ESPPlayers[player] = nil
                 end
             else
-                -- Eliminar si el jugador se fue
                 pcall(function()
                     if espData then
                         espData.gui:Destroy()
@@ -299,7 +434,6 @@ local function StartESP()
         end
     end)
     
-    -- Limpiar cuando jugador se va
     Players.PlayerRemoving:Connect(function(player)
         if ESPPlayers[player] then
             pcall(function()
@@ -324,39 +458,87 @@ local function StopESP()
 end
 
 -- =====================
--- INPUT SYSTEM
+-- INIT GUI
 -- =====================
 
+print("\n========================================")
+print("  South Bronx Script - GUI Edition")
+print("========================================\n")
+
+local gui = CreateGui()
+
+-- Validar Key
+gui.validateBtn.MouseButton1Click:Connect(function()
+    local key = gui.keyInput.Text
+    if ValidateKey(key) then
+        gui.statusLabel.Text = "Status: [✅ VALIDADO]"
+        gui.statusLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+        gui.keyInput.Visible = false
+        gui.validateBtn.Visible = false
+    else
+        gui.statusLabel.Text = "Status: [❌ KEY INVÁLIDA]"
+        gui.statusLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+    end
+end)
+
+-- Botón Fly
+gui.flyBtn.MouseButton1Click:Connect(function()
+    if FlyActive then
+        StopFly()
+        gui.flyBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        gui.flyBtn.Text = "FLY [OFF]"
+    else
+        StartFly()
+        gui.flyBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+        gui.flyBtn.Text = "FLY [ON]"
+    end
+end)
+
+-- Botón ESP
+gui.espBtn.MouseButton1Click:Connect(function()
+    if ESPActive then
+        StopESP()
+        gui.espBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        gui.espBtn.Text = "ESP [OFF]"
+    else
+        StartESP()
+        gui.espBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+        gui.espBtn.Text = "ESP [ON]"
+    end
+end)
+
+-- Botón Cerrar
+gui.closeBtn.MouseButton1Click:Connect(function()
+    gui.gui:Destroy()
+    GuiActive = false
+end)
+
+-- Atajos de teclado
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     
     if input.KeyCode == Enum.KeyCode.F then
         if FlyActive then
             StopFly()
+            gui.flyBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            gui.flyBtn.Text = "FLY [OFF]"
         else
             StartFly()
+            gui.flyBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+            gui.flyBtn.Text = "FLY [ON]"
         end
     elseif input.KeyCode == Enum.KeyCode.E then
         if ESPActive then
             StopESP()
+            gui.espBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            gui.espBtn.Text = "ESP [OFF]"
         else
             StartESP()
+            gui.espBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+            gui.espBtn.Text = "ESP [ON]"
         end
     end
 end)
-
--- =====================
--- INIT
--- =====================
-
-print("\n========================================")
-print("  South Bronx Script - Ragdoll Fly + ESP")
-print("========================================")
-print("[*] Ingresa tu KEY para acceder")
-print("[*] ValidateKey('TU_KEY_AQUI')")
-print("[*] Presiona F para Ragdoll Fly (On/Off)")
-print("[*] Presiona E para ESP (On/Off)")
-print("========================================\n")
 
 _G.ValidateKey = ValidateKey
 _G.StartFly = StartFly
