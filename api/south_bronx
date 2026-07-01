@@ -14,7 +14,7 @@ local HttpService = game:GetService("HttpService")
 local FlyActive = false
 local FlySpeed = 50
 local ESPActive = false
-local ESPParts = {}
+local ESPFolder = nil
 local ScriptActive = false
 local RagdollParts = {}
 
@@ -174,58 +174,52 @@ local function StopFly()
 end
 
 -- =====================
--- ESP SYSTEM
+-- ESP SYSTEM (Mejorado)
 -- =====================
 
-local function CreateESP(player)
+local function CreateESPGui(player)
     if player == LocalPlayer then return end
     if not player.Character then return end
     
-    local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+    local character = player.Character
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
     if not humanoidRootPart then return end
     
-    -- Caja
+    -- Crear carpeta para ESP si no existe
+    if not ESPFolder then
+        ESPFolder = Instance.new("Folder")
+        ESPFolder.Name = "ESPFolder"
+        ESPFolder.Parent = workspace
+    end
+    
+    -- Crear BillboardGui
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Size = UDim2.new(4, 0, 2, 0)
+    billboardGui.MaxDistance = 500
+    billboardGui.Parent = humanoidRootPart
+    
+    -- Crear TextLabel
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel.BackgroundTransparency = 0.5
+    textLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+    textLabel.TextSize = 18
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.Text = player.Name
+    textLabel.Parent = billboardGui
+    
+    -- Crear Box (LineHandleAdornment para dibujar caja)
     local box = Instance.new("BoxHandleAdornment")
-    box.Name = "ESPBox"
-    box.Size = Vector3.new(2, 3, 1)
+    box.Size = humanoidRootPart.Size + Vector3.new(0.5, 2, 0.5)
     box.Color3 = Color3.fromRGB(0, 255, 0)
     box.Transparency = 0.3
     box.Parent = humanoidRootPart
     
-    -- Nombre
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Name = "ESPName"
-    nameLabel.Text = player.Name
-    nameLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-    nameLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    nameLabel.BackgroundTransparency = 0.5
-    nameLabel.TextSize = 14
-    nameLabel.Size = UDim2.new(4, 0, 0, 20)
-    nameLabel.Parent = box
-    
-    ESPParts[player] = {box = box, label = nameLabel}
+    return {gui = billboardGui, label = textLabel, box = box}
 end
 
-local function UpdateESP()
-    for player, espData in pairs(ESPParts) do
-        if not player or not player.Parent then
-            pcall(function()
-                espData.box:Destroy()
-                espData.label:Destroy()
-            end)
-            ESPParts[player] = nil
-        else
-            local character = player.Character
-            if character then
-                local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-                if humanoidRootPart then
-                    local distance = (LocalPlayer.Character.HumanoidRootPart.Position - humanoidRootPart.Position).Magnitude
-                    espData.label.Text = player.Name .. " [" .. math.floor(distance) .. "m]"
-                end
-            end
-        end
-    end
-end
+local ESPPlayers = {}
 
 local function StartESP()
     if not ScriptActive then
@@ -236,33 +230,96 @@ local function StartESP()
     ESPActive = true
     print("[👁️] ESP Activado")
     
+    -- Crear ESP para jugadores existentes
     for _, player in ipairs(Players:GetPlayers()) do
-        CreateESP(player)
+        if player ~= LocalPlayer and not ESPPlayers[player] then
+            ESPPlayers[player] = CreateESPGui(player)
+        end
     end
     
-    Players.PlayerAdded:Connect(function(player)
-        if ESPActive then
+    -- Crear ESP para nuevos jugadores
+    local playerAddedConnection
+    playerAddedConnection = Players.PlayerAdded:Connect(function(player)
+        if ESPActive and player ~= LocalPlayer then
             wait(0.5)
-            CreateESP(player)
+            ESPPlayers[player] = CreateESPGui(player)
         end
     end)
     
-    game:GetService("RunService").RenderStepped:Connect(function()
-        if ESPActive then
-            UpdateESP()
+    -- Actualizar ESP constantemente
+    local espUpdateConnection
+    espUpdateConnection = game:GetService("RunService").RenderStepped:Connect(function()
+        if not ESPActive then
+            espUpdateConnection:Disconnect()
+            playerAddedConnection:Disconnect()
+            return
+        end
+        
+        for player, espData in pairs(ESPPlayers) do
+            if player and player.Parent and player.Character then
+                local character = player.Character
+                local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+                local humanoid = character:FindFirstChild("Humanoid")
+                
+                if humanoidRootPart and humanoid then
+                    -- Actualizar distancia
+                    local distance = (LocalPlayer.Character.HumanoidRootPart.Position - humanoidRootPart.Position).Magnitude
+                    local health = math.floor(humanoid.Health)
+                    espData.label.Text = player.Name .. " [" .. math.floor(distance) .. "m] " .. health .. "HP"
+                    
+                    -- Cambiar color según salud
+                    if health > 50 then
+                        espData.label.TextColor3 = Color3.fromRGB(0, 255, 0)
+                        espData.box.Color3 = Color3.fromRGB(0, 255, 0)
+                    elseif health > 25 then
+                        espData.label.TextColor3 = Color3.fromRGB(255, 255, 0)
+                        espData.box.Color3 = Color3.fromRGB(255, 255, 0)
+                    else
+                        espData.label.TextColor3 = Color3.fromRGB(255, 0, 0)
+                        espData.box.Color3 = Color3.fromRGB(255, 0, 0)
+                    end
+                else
+                    -- Eliminar si el jugador está muerto
+                    pcall(function()
+                        espData.gui:Destroy()
+                        espData.box:Destroy()
+                    end)
+                    ESPPlayers[player] = nil
+                end
+            else
+                -- Eliminar si el jugador se fue
+                pcall(function()
+                    if espData then
+                        espData.gui:Destroy()
+                        espData.box:Destroy()
+                    end
+                end)
+                ESPPlayers[player] = nil
+            end
+        end
+    end)
+    
+    -- Limpiar cuando jugador se va
+    Players.PlayerRemoving:Connect(function(player)
+        if ESPPlayers[player] then
+            pcall(function()
+                ESPPlayers[player].gui:Destroy()
+                ESPPlayers[player].box:Destroy()
+            end)
+            ESPPlayers[player] = nil
         end
     end)
 end
 
 local function StopESP()
     ESPActive = false
-    for player, espData in pairs(ESPParts) do
+    for player, espData in pairs(ESPPlayers) do
         pcall(function()
+            espData.gui:Destroy()
             espData.box:Destroy()
-            espData.label:Destroy()
         end)
     end
-    ESPParts = {}
+    ESPPlayers = {}
     print("[👁️] ESP Desactivado")
 end
 
