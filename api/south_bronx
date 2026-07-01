@@ -33,8 +33,8 @@ local function CreateGui()
     -- Panel principal
     local mainPanel = Instance.new("Frame")
     mainPanel.Name = "MainPanel"
-    mainPanel.Size = UDim2.new(0, 350, 0, 400)
-    mainPanel.Position = UDim2.new(0.5, -175, 0.5, -200)
+    mainPanel.Size = UDim2.new(0, 400, 0, 500)
+    mainPanel.Position = UDim2.new(0.5, -200, 0.5, -250)
     mainPanel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     mainPanel.BorderColor3 = Color3.fromRGB(0, 255, 0)
     mainPanel.BorderSizePixel = 3
@@ -64,7 +64,7 @@ local function CreateGui()
     statusLabel.TextXAlignment = Enum.TextXAlignment.Left
     statusLabel.Parent = mainPanel
     
-    -- Input Key
+    -- Input Key Label
     local keyLabel = Instance.new("TextLabel")
     keyLabel.Name = "KeyLabel"
     keyLabel.Size = UDim2.new(1, -20, 0, 20)
@@ -73,73 +73,89 @@ local function CreateGui()
     keyLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
     keyLabel.TextSize = 14
     keyLabel.Font = Enum.Font.Gotham
-    keyLabel.Text = "Ingresa tu KEY:"
+    keyLabel.Text = "Ingresa o pega tu KEY:"
     keyLabel.TextXAlignment = Enum.TextXAlignment.Left
     keyLabel.Parent = mainPanel
     
+    -- TextBox para pegar KEY
     local keyInput = Instance.new("TextBox")
     keyInput.Name = "KeyInput"
-    keyInput.Size = UDim2.new(1, -20, 0, 30)
+    keyInput.Size = UDim2.new(1, -20, 0, 35)
     keyInput.Position = UDim2.new(0, 10, 0, 115)
     keyInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     keyInput.BorderColor3 = Color3.fromRGB(0, 255, 0)
     keyInput.BorderSizePixel = 2
     keyInput.TextColor3 = Color3.fromRGB(0, 255, 0)
-    keyInput.TextSize = 12
+    keyInput.TextSize = 14
     keyInput.Font = Enum.Font.Gotham
-    keyInput.PlaceholderText = "KEY-SB2024-XXXXXX"
+    keyInput.PlaceholderText = "Ctrl+V para pegar | KEY-SB2024-XXXXXX"
+    keyInput.PlaceholderColor3 = Color3.fromRGB(100, 100, 100)
+    keyInput.ClearTextOnFocus = false
     keyInput.Parent = mainPanel
     
     -- Botón Validar
     local validateBtn = Instance.new("TextButton")
     validateBtn.Name = "ValidateBtn"
-    validateBtn.Size = UDim2.new(1, -20, 0, 35)
-    validateBtn.Position = UDim2.new(0, 10, 0, 155)
+    validateBtn.Size = UDim2.new(1, -20, 0, 40)
+    validateBtn.Position = UDim2.new(0, 10, 0, 160)
     validateBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
     validateBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
     validateBtn.TextSize = 16
     validateBtn.Font = Enum.Font.GothamBold
-    validateBtn.Text = "VALIDAR KEY"
+    validateBtn.Text = "✓ VALIDAR KEY"
     validateBtn.Parent = mainPanel
     
-    -- Separador
-    local separator = Instance.new("Frame")
-    separator.Name = "Separator"
-    separator.Size = UDim2.new(1, -20, 0, 2)
-    separator.Position = UDim2.new(0, 10, 0, 200)
-    separator.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    separator.BorderSizePixel = 0
-    separator.Parent = mainPanel
+    -- Separador 1
+    local separator1 = Instance.new("Frame")
+    separator1.Name = "Separator1"
+    separator1.Size = UDim2.new(1, -20, 0, 2)
+    separator1.Position = UDim2.new(0, 10, 0, 210)
+    separator1.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    separator1.BorderSizePixel = 0
+    separator1.Parent = mainPanel
+    
+    -- Label de Features
+    local featuresLabel = Instance.new("TextLabel")
+    featuresLabel.Name = "FeaturesLabel"
+    featuresLabel.Size = UDim2.new(1, -20, 0, 20)
+    featuresLabel.Position = UDim2.new(0, 10, 0, 225)
+    featuresLabel.BackgroundTransparency = 1
+    featuresLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+    featuresLabel.TextSize = 14
+    featuresLabel.Font = Enum.Font.GothamBold
+    featuresLabel.Text = "FEATURES:"
+    featuresLabel.TextXAlignment = Enum.TextXAlignment.Left
+    featuresLabel.Parent = mainPanel
     
     -- Botón Fly
     local flyBtn = Instance.new("TextButton")
     flyBtn.Name = "FlyBtn"
-    flyBtn.Size = UDim2.new(0.5, -7, 0, 40)
-    flyBtn.Position = UDim2.new(0, 10, 0, 215)
+    flyBtn.Size = UDim2.new(0.5, -7, 0, 45)
+    flyBtn.Position = UDim2.new(0, 10, 0, 255)
     flyBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     flyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     flyBtn.TextSize = 14
     flyBtn.Font = Enum.Font.GothamBold
-    flyBtn.Text = "FLY [OFF]"
+    flyBtn.Text = "✈️ FLY\n[OFF]"
     flyBtn.Parent = mainPanel
     
     -- Botón ESP
     local espBtn = Instance.new("TextButton")
     espBtn.Name = "EspBtn"
-    espBtn.Size = UDim2.new(0.5, -7, 0, 40)
-    espBtn.Position = UDim2.new(0.5, 4, 0, 215)
+    espBtn.Size = UDim2.new(0.5, -7, 0, 45)
+    espBtn.Position = UDim2.new(0.5, 4, 0, 255)
     espBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     espBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     espBtn.TextSize = 14
     espBtn.Font = Enum.Font.GothamBold
-    espBtn.Text = "ESP [OFF]"
+    espBtn.Text = "👁️ ESP\n[OFF]"
     espBtn.Parent = mainPanel
     
     -- Info Text
     local infoText = Instance.new("TextLabel")
     infoText.Name = "InfoText"
-    infoText.Size = UDim2.new(1, -20, 0, 90)
-    infoText.Position = UDim2.new(0, 10, 0, 270)
+    infoText.Size = UDim2.new(1, -20, 0, 100)
+    infoText.Position = UDim2.new(0, 10, 0, 315)
     infoText.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     infoText.BorderColor3 = Color3.fromRGB(0, 255, 0)
     infoText.BorderSizePixel = 1
@@ -149,19 +165,19 @@ local function CreateGui()
     infoText.TextWrapped = true
     infoText.TextXAlignment = Enum.TextXAlignment.Left
     infoText.TextYAlignment = Enum.TextYAlignment.Top
-    infoText.Text = "📋 CONTROLES:\n• F: Toggle Fly (Ragdoll)\n• E: Toggle ESP\n• F9: Ver Consola"
+    infoText.Text = "📋 CONTROLES:\n\n• F: Toggle Fly (Ragdoll)\n• E: Toggle ESP\n• F9: Ver Consola\n\n⚠️ Valida tu KEY primero!"
     infoText.Parent = mainPanel
     
     -- Botón Cerrar
     local closeBtn = Instance.new("TextButton")
     closeBtn.Name = "CloseBtn"
-    closeBtn.Size = UDim2.new(1, -20, 0, 25)
-    closeBtn.Position = UDim2.new(0, 10, 0, 370)
+    closeBtn.Size = UDim2.new(1, -20, 0, 30)
+    closeBtn.Position = UDim2.new(0, 10, 0, 460)
     closeBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
     closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     closeBtn.TextSize = 14
     closeBtn.Font = Enum.Font.GothamBold
-    closeBtn.Text = "CERRAR"
+    closeBtn.Text = "✕ CERRAR"
     closeBtn.Parent = mainPanel
     
     return {
@@ -462,7 +478,7 @@ end
 -- =====================
 
 print("\n========================================")
-print("  South Bronx Script - GUI Edition")
+print("  South Bronx Script - GUI Edition v2")
 print("========================================\n")
 
 local gui = CreateGui()
@@ -470,11 +486,18 @@ local gui = CreateGui()
 -- Validar Key
 gui.validateBtn.MouseButton1Click:Connect(function()
     local key = gui.keyInput.Text
+    if key == "" then
+        gui.statusLabel.Text = "Status: [❌ INGRESA UNA KEY]"
+        gui.statusLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+        return
+    end
+    
     if ValidateKey(key) then
         gui.statusLabel.Text = "Status: [✅ VALIDADO]"
         gui.statusLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-        gui.keyInput.Visible = false
-        gui.validateBtn.Visible = false
+        gui.keyInput.Editable = false
+        gui.validateBtn.Text = "✓ VALIDADO"
+        gui.validateBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
     else
         gui.statusLabel.Text = "Status: [❌ KEY INVÁLIDA]"
         gui.statusLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
@@ -486,11 +509,11 @@ gui.flyBtn.MouseButton1Click:Connect(function()
     if FlyActive then
         StopFly()
         gui.flyBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        gui.flyBtn.Text = "FLY [OFF]"
+        gui.flyBtn.Text = "✈️ FLY\n[OFF]"
     else
         StartFly()
         gui.flyBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-        gui.flyBtn.Text = "FLY [ON]"
+        gui.flyBtn.Text = "✈️ FLY\n[ON]"
     end
 end)
 
@@ -499,11 +522,11 @@ gui.espBtn.MouseButton1Click:Connect(function()
     if ESPActive then
         StopESP()
         gui.espBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        gui.espBtn.Text = "ESP [OFF]"
+        gui.espBtn.Text = "👁️ ESP\n[OFF]"
     else
         StartESP()
         gui.espBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-        gui.espBtn.Text = "ESP [ON]"
+        gui.espBtn.Text = "👁️ ESP\n[ON]"
     end
 end)
 
@@ -521,21 +544,21 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if FlyActive then
             StopFly()
             gui.flyBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            gui.flyBtn.Text = "FLY [OFF]"
+            gui.flyBtn.Text = "✈️ FLY\n[OFF]"
         else
             StartFly()
             gui.flyBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-            gui.flyBtn.Text = "FLY [ON]"
+            gui.flyBtn.Text = "✈️ FLY\n[ON]"
         end
     elseif input.KeyCode == Enum.KeyCode.E then
         if ESPActive then
             StopESP()
             gui.espBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            gui.espBtn.Text = "ESP [OFF]"
+            gui.espBtn.Text = "👁️ ESP\n[OFF]"
         else
             StartESP()
             gui.espBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-            gui.espBtn.Text = "ESP [ON]"
+            gui.espBtn.Text = "👁️ ESP\n[ON]"
         end
     end
 end)
