@@ -1,0 +1,264 @@
+-- South Bronx Script with Fly + ESP + Key System
+-- Made by: sadx8992
+
+local GITHUB_RAW = "https://raw.githubusercontent.com/sadx8992-lgtm/jean14_17/main"
+local KEYS_URL = GITHUB_RAW .. "/keys.json"
+
+-- Variables
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+
+local FlyActive = false
+local FlySpeed = 50 -- Lento
+local ESPActive = false
+local ESPParts = {}
+local ScriptActive = false
+
+-- =====================
+-- KEY VALIDATION SYSTEM
+-- =====================
+
+local function ValidateKey(key)
+    local success, response = pcall(function()
+        return game:HttpGet(KEYS_URL)
+    end)
+    
+    if not success then
+        print("[ERROR] No se pudo conectar al servidor de keys")
+        return false
+    end
+    
+    local keys_data = HttpService:JSONDecode(response)
+    
+    -- Verificar si la key está en available_keys
+    for _, available_key in ipairs(keys_data.available_keys) do
+        if available_key == key then
+            -- Key válida, verificar si ya fue usada
+            for _, used_key in ipairs(keys_data.used_keys) do
+                if used_key == key then
+                    print("[⚠️] Key Usada - Esta llave ya fue utilizada")
+                    return false
+                end
+            end
+            print("[✓] Key Válida - Acceso Concedido")
+            ScriptActive = true
+            return true
+        end
+    end
+    
+    print("[✗] Key Inválida")
+    return false
+end
+
+-- =====================
+-- FLY SYSTEM
+-- =====================
+
+local function StartFly()
+    if not ScriptActive then
+        print("[!] Debes validar una key primero")
+        return
+    end
+    
+    local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+    if not humanoid then return end
+    
+    local rootPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then return end
+    
+    FlyActive = true
+    
+    local bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+    bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    bodyVelocity.Parent = rootPart
+    
+    local bodyGyro = Instance.new("BodyGyro")
+    bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+    bodyGyro.Parent = rootPart
+    
+    humanoid.PlatformStand = true
+    
+    local connection
+    connection = game:GetService("RunService").RenderStepped:Connect(function()
+        if not FlyActive or not LocalPlayer.Character then
+            connection:Disconnect()
+            bodyVelocity:Destroy()
+            bodyGyro:Destroy()
+            humanoid.PlatformStand = false
+            return
+        end
+        
+        local moveDirection = Vector3.new(0, 0, 0)
+        
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+            moveDirection = moveDirection + (Camera.CFrame.LookVector * Vector3.new(1, 0, 1)).Unit
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+            moveDirection = moveDirection - (Camera.CFrame.LookVector * Vector3.new(1, 0, 1)).Unit
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+            moveDirection = moveDirection - Camera.CFrame.RightVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+            moveDirection = moveDirection + Camera.CFrame.RightVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+            moveDirection = moveDirection + Vector3.new(0, 1, 0)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+            moveDirection = moveDirection - Vector3.new(0, 1, 0)
+        end
+        
+        if moveDirection.Magnitude > 0 then
+            moveDirection = moveDirection.Unit
+        end
+        
+        bodyVelocity.Velocity = moveDirection * FlySpeed
+        bodyGyro.CFrame = Camera.CFrame
+    end)
+    
+    print("[✈️] Fly Activado - W/A/S/D para mover, Space/Ctrl para subir/bajar")
+end
+
+local function StopFly()
+    FlyActive = false
+    print("[✈️] Fly Desactivado")
+end
+
+-- =====================
+-- ESP SYSTEM
+-- =====================
+
+local function CreateESP(player)
+    if player == LocalPlayer then return end
+    if not player.Character then return end
+    
+    local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then return end
+    
+    -- Caja
+    local box = Instance.new("BoxHandleAdornment")
+    box.Name = "ESPBox"
+    box.Size = Vector3.new(2, 3, 1)
+    box.Color3 = Color3.fromRGB(0, 255, 0)
+    box.Transparency = 0.3
+    box.Parent = humanoidRootPart
+    
+    -- Nombre
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Name = "ESPName"
+    nameLabel.Text = player.Name
+    nameLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+    nameLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    nameLabel.BackgroundTransparency = 0.5
+    nameLabel.TextSize = 14
+    nameLabel.Size = UDim2.new(4, 0, 0, 20)
+    nameLabel.Parent = box
+    
+    ESPParts[player] = {box = box, label = nameLabel}
+end
+
+local function UpdateESP()
+    for player, espData in pairs(ESPParts) do
+        if not player or not player.Parent then
+            pcall(function()
+                espData.box:Destroy()
+                espData.label:Destroy()
+            end)
+            ESPParts[player] = nil
+        else
+            local character = player.Character
+            if character then
+                local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+                if humanoidRootPart then
+                    local distance = (LocalPlayer.Character.HumanoidRootPart.Position - humanoidRootPart.Position).Magnitude
+                    espData.label.Text = player.Name .. " [" .. math.floor(distance) .. "m]"
+                end
+            end
+        end
+    end
+end
+
+local function StartESP()
+    if not ScriptActive then
+        print("[!] Debes validar una key primero")
+        return
+    end
+    
+    ESPActive = true
+    print("[👁️] ESP Activado")
+    
+    for _, player in ipairs(Players:GetPlayers()) do
+        CreateESP(player)
+    end
+    
+    Players.PlayerAdded:Connect(function(player)
+        if ESPActive then
+            wait(0.5)
+            CreateESP(player)
+        end
+    end)
+    
+    game:GetService("RunService").RenderStepped:Connect(function()
+        if ESPActive then
+            UpdateESP()
+        end
+    end)
+end
+
+local function StopESP()
+    ESPActive = false
+    for player, espData in pairs(ESPParts) do
+        pcall(function()
+            espData.box:Destroy()
+            espData.label:Destroy()
+        end)
+    end
+    ESPParts = {}
+    print("[👁️] ESP Desactivado")
+end
+
+-- =====================
+-- INPUT SYSTEM
+-- =====================
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.F then
+        if FlyActive then
+            StopFly()
+        else
+            StartFly()
+        end
+    elseif input.KeyCode == Enum.KeyCode.E then
+        if ESPActive then
+            StopESP()
+        else
+            StartESP()
+        end
+    end
+end)
+
+-- =====================
+-- INIT
+-- =====================
+
+print("\n========================================")
+print("  South Bronx Script - Fly + ESP")
+print("========================================")
+print("[*] Ingresa tu KEY para acceder")
+print("[*] ValidateKey('TU_KEY_AQUI')")
+print("[*] Presiona F para Fly (On/Off)")
+print("[*] Presiona E para ESP (On/Off)")
+print("========================================\n")
+
+_G.ValidateKey = ValidateKey
+_G.StartFly = StartFly
+_G.StopFly = StopFly
+_G.StartESP = StartESP
+_G.StopESP = StopESP
